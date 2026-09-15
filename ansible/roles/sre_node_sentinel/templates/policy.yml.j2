@@ -1,0 +1,4 @@
+# Managed by Ansible. Manual edits will be overwritten.
+name: {{ sre_node_sentinel_policy_name | to_json }}
+checks:
+{{ sre_node_sentinel_policy.checks | to_nice_yaml(indent=2) | indent(2, true) }}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Run SRE Node Sentinel periodically
+
+[Timer]
+OnBootSec=3m
+OnUnitActiveSec={{ sre_node_sentinel_interval }}
+RandomizedDelaySec=90
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,13 @@
+---
+# Pin this to an internally reviewed artifact in production. The role does not
+# download code itself; Ansible's pip module delegates package retrieval to the
+# configured package index and TLS trust chain.
+sre_node_sentinel_package: "sre-node-sentinel==0.1.0"
+sre_node_sentinel_python_executable: /usr/bin/python3
+sre_node_sentinel_user: sre-node-sentinel
+sre_node_sentinel_group: sre-node-sentinel
+sre_node_sentinel_policy: {}
+sre_node_sentinel_policy_name: linux-sre-baseline
+sre_node_sentinel_textfile_directory: /var/lib/node_exporter/textfile_collector
+sre_node_sentinel_interval: 15m
+sre_node_sentinel_enable_timer: true

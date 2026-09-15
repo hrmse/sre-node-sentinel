@@ -1,0 +1,19 @@
+---
+- name: Install Linux node compliance telemetry
+  hosts: linux_nodes
+  become: true
+  roles:
+    - role: sre_node_sentinel
+      vars:
+        sre_node_sentinel_policy:
+          checks:
+            - id: ssh-root-login-disabled
+              type: sshd_directive
+              key: PermitRootLogin
+              expected: "no"
+              severity: high
+            - id: reverse-path-filtering
+              type: sysctl
+              key: net.ipv4.conf.all.rp_filter
+              expected: "1"
+              severity: medium

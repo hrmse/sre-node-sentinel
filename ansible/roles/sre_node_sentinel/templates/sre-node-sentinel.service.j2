@@ -1,0 +1,27 @@
+[Unit]
+Description=SRE Node Sentinel Linux configuration audit
+Documentation=https://github.com/REPLACE_WITH_OWNER/sre-node-sentinel
+After=local-fs.target
+ConditionPathExists=/etc/sre-node-sentinel/policy.yml
+
+[Service]
+Type=oneshot
+User={{ sre_node_sentinel_user }}
+Group={{ sre_node_sentinel_group }}
+UMask=0027
+ExecStart=/usr/local/bin/sre-node-sentinel --policy /etc/sre-node-sentinel/policy.yml --format prometheus --output {{ sre_node_sentinel_textfile_directory }}/sre_node_sentinel.prom
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+ReadWritePaths={{ sre_node_sentinel_textfile_directory }}

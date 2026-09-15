@@ -1,0 +1,82 @@
+---
+- name: Validate role inputs
+  ansible.builtin.assert:
+    that:
+      - sre_node_sentinel_policy is mapping
+      - sre_node_sentinel_policy.checks is defined
+      - sre_node_sentinel_policy.checks is iterable
+      - sre_node_sentinel_textfile_directory is match('^/[^ ]+$')
+    fail_msg: "Provide a policy mapping with checks and an absolute textfile directory."
+
+- name: Install Python runtime dependencies
+  ansible.builtin.package:
+    name:
+      - python3
+      - python3-pip
+    state: present
+
+- name: Install reviewed Sentinel package
+  ansible.builtin.pip:
+    name: "{{ sre_node_sentinel_package }}"
+    executable: pip3
+    state: present
+  register: sre_node_sentinel_package_install
+  notify: Restart sre-node-sentinel timer
+
+- name: Create dedicated service group
+  ansible.builtin.group:
+    name: "{{ sre_node_sentinel_group }}"
+    system: true
+
+- name: Create dedicated service identity
+  ansible.builtin.user:
+    name: "{{ sre_node_sentinel_user }}"
+    group: "{{ sre_node_sentinel_group }}"
+    system: true
+    create_home: false
+    shell: /usr/sbin/nologin
+
+- name: Create Sentinel state directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ sre_node_sentinel_group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /etc/sre-node-sentinel, owner: root, mode: '0750' }
+    - { path: "{{ sre_node_sentinel_textfile_directory }}", owner: "{{ sre_node_sentinel_user }}", mode: '0750' }
+
+- name: Install policy with restricted permissions
+  ansible.builtin.template:
+    src: policy.yml.j2
+    dest: /etc/sre-node-sentinel/policy.yml
+    owner: root
+    group: "{{ sre_node_sentinel_group }}"
+    mode: '0640'
+  notify: Restart sre-node-sentinel timer
+
+- name: Install hardened audit service
+  ansible.builtin.template:
+    src: sre-node-sentinel.service.j2
+    dest: /etc/systemd/system/sre-node-sentinel.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart sre-node-sentinel timer
+
+- name: Install audit timer
+  ansible.builtin.template:
+    src: sre-node-sentinel.timer.j2
+    dest: /etc/systemd/system/sre-node-sentinel.timer
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart sre-node-sentinel timer
+
+- name: Enable scheduled audits
+  ansible.builtin.systemd_service:
+    name: sre-node-sentinel.timer
+    enabled: "{{ sre_node_sentinel_enable_timer }}"
+    state: "{{ 'started' if sre_node_sentinel_enable_timer else 'stopped' }}"
+    daemon_reload: true
