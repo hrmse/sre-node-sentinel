@@ -1,0 +1,33 @@
+name: linux-sre-baseline
+checks:
+  - id: ssh-root-login-disabled
+    type: sshd_directive
+    key: PermitRootLogin
+    expected: "no"
+    severity: high
+
+  - id: ssh-config-owner-only
+    type: file_mode
+    path: /etc/ssh/sshd_config
+    expected: "0600"
+    severity: medium
+
+  - id: reverse-path-filtering
+    type: sysctl
+    key: net.ipv4.conf.all.rp_filter
+    expected: "1"
+    severity: medium
+
+  - id: temporary-filesystem-noexec
+    type: mount_option
+    path: /tmp
+    option: noexec
+    expected: present
+    severity: medium
+
+  - id: sentinel-service-no-new-privileges
+    type: systemd_setting
+    path: /etc/systemd/system/sre-node-sentinel.service
+    key: Service.NoNewPrivileges
+    expected: "true"
+    severity: high
