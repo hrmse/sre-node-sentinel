@@ -164,5 +164,5 @@ and the [runbooks](docs/runbooks/).
 
 ## License
 
-Apache-2.0. Contributions should include tests and retain the read-only design
+MIT. Contributions should include tests and retain the read-only design
 principle.
